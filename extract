@@ -1,0 +1,80 @@
+#!/bin/bash
+
+set -e
+
+bad_usage(){
+    echo "Error: Bad usage. See help (-h) for program usage."
+    exit 1
+}
+
+print_help(){
+    cat ~/.local/mybin/doc/extract
+    exit 0
+}
+
+parse_arguments(){
+  POSITIONAL=()
+
+  while [[ $# -gt 0 ]]
+	do
+	key="$1"
+
+    case $key in
+
+	-h|--help)
+	print_help
+	;;
+
+	-v|--verbose)
+	VERBOSE=1
+	shift # past argument
+	;;
+
+	*)    # unknown option
+	POSITIONAL+=("$1") # save it in an array for later
+	shift # past argument
+	;;
+
+  esac
+  done
+  set -- "${POSITIONAL[@]}" # restore positional parameters
+}
+
+parse_arguments $@
+
+# check that we have something to extract
+if [ "${#POSITIONAL[*]}" -eq 0 ]; then
+    bad_usage
+fi
+
+# setup arguments for extract programs
+if [ -z ${VERBOSE+x} ]; then
+    #quiet
+    UNZIP_ARGS="-q"
+    TAR_ARGS="zxf"
+else
+    #verbose
+    UNZIP_ARGS=""
+    TAR_ARGS="zxvf"
+fi
+
+for file in ${POSITIONAL[*]}; do
+	echo "Extracting file '$file' ..."
+	extension="${file##*.}"
+
+	case "$extension" in
+	zip)
+		unzip $UNZIP_ARGS "$file"
+		;;
+	tgz)
+		tar $TAR_ARGS "$file"
+		;;
+	*)
+		echo "Error: Unknown file extension '$extension'."
+		exit 1
+		;;
+	esac
+
+	echo "Extracting finished"
+done
+

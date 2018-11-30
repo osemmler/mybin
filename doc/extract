@@ -1,0 +1,11 @@
+Usage: extract [-options] <file list>
+
+Extract all files from file list to current folder.
+
+  Supported file extensions:
+    zip, tgz
+
+  Options:
+    -h, --help		Print this help.
+    -v, --verbose	Turn on verbose mode.
+
