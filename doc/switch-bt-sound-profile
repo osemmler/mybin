@@ -1,0 +1,8 @@
+Usage: switch-bt-sound-profile [-options]
+
+Switching between HSP/HFP and A2DP bluetooth sound profiles.
+
+  Options:
+    -h, --help		Print this help.
+    -v, --verbose	Turn on verbose mode.
+

@@ -1,0 +1,69 @@
+#!/bin/bash
+
+set -e
+
+bad_usage(){
+    echo "Error: Bad usage. See help (-h) for program usage."
+    exit 1
+}
+
+print_help(){
+    cat ~/.local/mybin/doc/switch-bt-sound-profile
+    exit 0
+}
+
+parse_arguments(){
+  while [[ $# -gt 0 ]]
+	do
+	key="$1"
+
+    case $key in
+
+      -h|--help)
+        print_help
+	      ;;
+
+	    -v|--verbose)
+	      VERBOSE=1
+	      shift # past argument
+	      ;;
+
+	    *)    # unknown option
+        bad_usage
+	      ;;
+
+    esac
+  done
+}
+
+parse_arguments $@
+
+HEADSET="headset_head_unit"
+A2DP="a2dp_sink"
+CARD=`pacmd list-cards | grep bluez_card | grep -oP 'bluez_card\.[0-9_A-Z]+'`
+
+# check that we found card
+if [ -z ${CARD+x} ]; then
+  echo "Error: Can't find bluez_card."
+  exit 1
+fi
+
+# get current and new profile
+if pacmd list-cards | grep "active profile: <$HEADSET>" &> /dev/null; then
+	CURRENT_MODE=$HEADSET
+	NEW_MODE=$A2DP
+else
+	CURRENT_MODE=$A2DP
+	NEW_MODE=$HEADSET
+fi
+
+# verbose
+if [ ! -z ${VERBOSE+x} ]; then
+  #verbose
+  echo "Card: $CARD"
+  echo "Current mode: $CURRENT_MODE"
+  echo "New mode: $NEW_MODE"
+fi
+
+# switch
+pacmd set-card-profile "$CARD" "$NEW_MODE"
