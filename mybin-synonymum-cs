@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import urllib
+import sys, argparse
+from BeautifulSoup import BeautifulSoup
+
+# nastaveni kodovani
+reload(sys)
+sys.setdefaultencoding('utf8')
+
+# parsovani vstupnich argumentu
+parser = argparse.ArgumentParser()
+parser.add_argument("word")
+args = parser.parse_args()
+
+# nacteni html
+link = "https://www.nechybujte.cz/slovnik-ceskych-synonym/"+args.word
+f = urllib.urlopen(link)
+html = f.read()
+
+# parsovani html
+soup = BeautifulSoup(html)
+entry = soup.find('table', 'ths_entry')
+print(entry)
+#trs = entry.findAll('tr')
+
+# tisk vysledku
+#for tr in trs:
+#    print(tr.text)
