@@ -1,0 +1,17 @@
+#!/bin/bash
+
+function doFind
+{
+    PATTERN="$1"
+    SYMBOL=$2
+    FILES=`find $PWD -name "$PATTERN"`
+    
+    for LIB in $FILES; do
+        if objdump -t $LIB | grep $SYMBOL &> /dev/null; then
+            echo $LIB
+        fi
+    done
+}
+
+doFind "*.so" $1
+doFind "*.a" $1
