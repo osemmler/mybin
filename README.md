@@ -22,3 +22,4 @@ if [ -d "$HOME/.local/mybin" ] ; then
     PATH="$HOME/.local/mybin:$PATH"
 fi
 ```
+- Logout and login again
