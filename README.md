@@ -15,11 +15,15 @@ sudo apt install git
 ```sh
 git clone https://github.com/osemmler/mybin.git ~/.local/mybin
 ```
-- Add folowing code to ~/.profile
+- Add folowing lines to ~/.profile
 ```sh
 # set PATH so it includes user's private mybin if it exists
 if [ -d "$HOME/.local/mybin" ] ; then
     PATH="$HOME/.local/mybin:$PATH"
 fi
+```
+- Run following command to install mc key shortcuts
+```
+ln -s $HOME/.local/mybin/mc.keymap $HOME/.config/mc/mc.keymap
 ```
 - Logout and login again
