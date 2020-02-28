@@ -1,0 +1,106 @@
+#!/usr/bin/python
+
+"""
+    Read given DICOM file or all DICOM files from
+    given directory an print out required attribute
+"""
+
+import sys, os
+import dicom
+from dicom.filereader import InvalidDicomError
+from dicom.tag import Tag
+from dicom.datadict import tag_for_name
+import argparse
+
+class ArgsError(Exception):
+    """
+    Error in given arguments
+    """
+    pass
+
+def read_argparse():
+    # argparse variant
+    parser = argparse.ArgumentParser(description='Read given attribute value from the file')
+    parser.add_argument('-a', '--attr', action='append', help='attribute name', required=True)
+    parser.add_argument('--noprint', action='store_true', help='no print results to standart output')
+    parser.add_argument('iarg' , help='dicom file or directory with dicom files')
+    parser.add_argument('-s', '--sub', action='store_true', help='searchIntoSub flag indicating whether to search into sequences or not')
+    return parser.parse_args()
+
+class GetAttributeWalk(object):
+
+    def get_attr(self, fname, opts):
+        """
+        fname - dicom filename
+        attrs - list of required DICOM Tags
+        """
+        try:
+            ds = dicom.read_file(fname, stop_before_pixels=True)
+        except Exception as ex:
+            print "%s: --- invalid dicom format ---%s"%(fname, ex)
+            return
+
+        tags = [fname]
+        for s in opts.attr:
+            try:
+                tag = tag_for_name(s)
+            except:
+                tag =Tag(s)
+            if opts.sub:
+                try:
+                    self.searchIntoSub(ds, tag, tags)
+                except:
+                    print "skip: " + fname
+            else:
+                self.search(ds, tag, tags)
+        return tags
+
+    def search(self, ds, tag, results):
+        results.append(str(ds.get(tag)))
+
+    def searchIntoSub(self, ds, tag, results):
+        vals = []
+        for elem in ds.iterall():
+            if elem.tag == tag:
+                vals.append(str(elem.value))
+        results.append("[" + ",".join(vals)+ "]" )
+
+
+    def print_attr(self, tags ):
+        try:
+            print ";".join([str(x) for x in tags])
+        except Exception as e:
+            pass
+
+    def main(self, opts):
+        if os.path.isfile(opts.iarg):
+            # input file
+            dcmfile = opts.iarg
+            if opts.noprint:
+                return [self.get_attr()]
+            else:
+                self.print_attr(self.get_attr(dcmfile, opts))
+            return
+        elif os.path.isdir(opts.iarg):
+            # input directory
+            dname = opts.iarg
+            output = []
+            for (root, dirs, files) in os.walk(dname):
+                for f in files:
+                    dcmfile = os.path.join(root, f)
+                    if opts.noprint:
+                        output.append(self.get_attr(dcmfile, opts))
+                    else:
+                        self.print_attr(self.get_attr(dcmfile, opts))
+            return output
+        else:
+            raise ArgsError("Input file  doesn't exist")
+
+
+if __name__ == "__main__":
+    # parse arguments
+    opts = read_argparse()
+    # create walk object
+    walk = GetAttributeWalk()
+    # make job
+    walk.main(opts)
